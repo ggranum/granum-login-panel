@@ -1,0 +1,469 @@
+<!--
+    @license
+    Copyright (c) 2014 Geoff M. Granum. Released under the [MIT license](http://choosealicense.com/licenses/mit/).
+    @author Geoff M. Granum
+-->
+
+
+<!--
+
+A clean, simple login dialog UI.
+
+
+##### Example
+    <script src="../webcomponentsjs/webcomponents.min.js"></script>
+
+    <script src="../polyfills.js"></script>
+    <script src="../granum-login-panel.js"></script>
+
+    <link rel="import" href="../granum-login-panel.html">
+    <body>
+      <div class="container" layout horizontal>
+
+      </div>
+    ...
+
+Polyfill.js fills 'Object.assign', because I'm lazy
+@element granum-login-panel
+@blurb Clean, simple login dialog UI.
+@status alpha
+@homepage https://github.com/ggranum/granum-login-panel
+
+-->
+<link rel="import" href="../polymer/polymer.html">
+
+<link rel="import" href="../core-label/core-label.html">
+
+<link rel="import" href="../paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-shadow/paper-shadow.html">
+
+
+<script src="./polyfills.js"></script>
+<script src="AuthServiceAdaptor.js"></script>
+
+
+<polymer-element name="granum-login-panel" layout vertical>
+  <template>
+    <link href="granum-login-panel.css" rel="stylesheet">
+
+    <template id="tidDialogContent">
+      <div flex layout vertical id="idHeaderPanel">
+        <div class="header">
+          <h2>{{aRsrc.headerText}}</h2>
+
+          <div class="dialog-create-account">{{aRsrc.subHeaderText}} <a href="javascript:void(0);"
+                                                                        on-tap="{{onSubHeaderLinkTap}}">{{aRsrc.subHeaderLinkText}}</a>
+          </div>
+        </div>
+
+        <div class="content" flex self-stretch auto>
+          <h3>{{aRsrc.lede}}</h3>
+
+          <div class="dialog-fields" layout vertical center-justified>
+            <paper-input-decorator floatingLabel
+                                   class="username-field"
+                                   label="{{aRsrc.usernameFieldLabel}}"
+                                   error="{{usernameErrorMessage}}"
+                                   isInvalid="{{showUsernameError}}">
+              <input is="core-input"
+                     id="fUsername"
+                     type="{{requireEmailUsername ? 'email' : 'text'}}"
+                     value="{{usernameUcValue}}"
+                     committedvalue="{{username}}">
+            </paper-input-decorator>
+            <paper-input-decorator floatingLabel
+                                   class="password-field"
+                                   label="{{aRsrc.passwordFieldLabel}}"
+                                   error="{{passwordErrorMessage}}"
+                                   isInvalid="{{showPasswordError}}">
+              <input is="core-input"
+                     type="password"
+                     value="{{passwordUcValue}}"
+                     committedvalue="{{password}}">
+            </paper-input-decorator>
+            <template if="{{displayMode == displayModes.signup}}">
+              <paper-input-decorator floatingLabel
+                                     class="password-field"
+                                     label="{{aRsrc.passwordVerificationFieldLabel}}"
+                                     error="{{aRsrc.passwordVerificationErrorMessage}}"
+                                     isInvalid="{{passwordVerificationValue !== '' && password != passwordVerificationValue}}">
+                <input is="core-input"
+                       type="password"
+                       value="{{passwordVerificationUcValue}}"
+                       committedvalue="{{passwordVerificationValue}}">
+              </paper-input-decorator>
+            </template>
+            <template if="{{displayMode  == displayModes.login}}">
+              <div class="dialog-forgot-password">{{aRsrc.resetPasswordText}} <a href="javascript:void(0);"
+                                                                                 on-tap="{{onForgotPasswordLinkTap}}">{{aRsrc.resetPasswordLinkText}}</a></div>
+
+              <core-label class="remember-me" center horizontal layout>
+                <paper-checkbox for class="blue" checked?="{{rememberMe}}"></paper-checkbox>
+                <div class="remember-me-text" flex>Remember me</div>
+              </core-label>
+            </template>
+            <span class="actionFailed">&nbsp;{{actionFailedMessage}}</span>
+            <paper-button raised
+                          id="idActionButton"
+                          class="login-button"
+                          disabled="true"
+                          on-tap="{{onActionButtonTap}}">{{aRsrc.actionButtonLabel}}
+            </paper-button>
+          </div>
+
+        </div>
+      </div>
+    </template>
+
+    <template if="{{shadowed}}">
+      <paper-shadow flex z="3">
+        <template bind ref="tidDialogContent"></template>
+      </paper-shadow>
+    </template>
+
+    <template if="{{!shadowed}}">
+      <template bind ref="tidDialogContent"></template>
+    </template>
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      /**
+       * Fired after the login has been successful and the 'login success' message has been displayed for a few moments.
+       *
+       * @event login-success
+       */
+
+      /**
+       * Fired after an account creation has been successful and the 'success' message has been displayed for a few moments.
+       *
+       * @event signup-success
+       */
+
+
+      /**
+       * The available display modes.
+       * @readonly
+       * @attribute displayModes
+       * @type Boolean
+       * @default false
+       */
+      displayModes: {
+        login: 'login',
+        signup: 'signup',
+        forgotPassword: 'forgotPassword'
+      },
+
+      /**
+       * The value for the password field. Wouldn't it be nice if browsers would auto-populate it? But it's not likely to happen if you're doing
+       * async logins. Sorry!
+       * This value is cleared after a successful login, so don't bother.
+       *
+       * @attribute password
+       * @type String
+       * @default empty
+       */
+      password: "",
+
+      showUsernameError: false,
+      showPasswordError: false,
+
+      publish: {
+
+        /**
+         * The value for the username field. Typically only consumed, but can be used to pre-populate based on a user cookie.
+         * @attribute username
+         * @required
+         * @type AuthServiceAdaptor
+         * @default undefined
+         */
+        authServiceAdaptor: undefined,
+
+        /**
+         * Show a shadow. Looks dialog-like, but doesn't require a dialog. Not needed if you're using a paper-shadow or paper-*-dialog element.
+         * @attribute shadowed
+         * @type Boolean
+         * @default false
+         */
+        shadowed: false,
+
+        /**
+         * One of 'login', 'signup' or 'forgotPassword'
+         * @attribute displayMode
+         * @type String
+         * @default 'login'
+         */
+        displayMode: 'login',
+
+        /**
+         * Error message that will displayed if the username field's 'isInvalid' field becomes true.
+         * This message is typically set by the AuthServiceAdaptor or pre-validation methods (e.g. length checks).
+         * @attribute usernameErrorMessage
+         * @type String
+         * @default rsrc.error.usernameMustBeValidEmail
+         */
+        usernameErrorMessage: "",
+
+        /**
+         * Error message that will displayed if the password field's 'isInvalid' field becomes true.
+         * This message is typically set by the AuthServiceAdaptor or pre-validation methods (e.g. length checks).
+         * @attribute passwordErrorMessage
+         * @type String
+         * @default rsrc.error.passwordTooShort
+         */
+        passwordErrorMessage: "",
+
+        /**
+         * Error message that will displayed if the login, signup or forgot password action fails.
+         * This message is typically set by the AuthServiceAdaptor.
+         * @attribute actionFailedMessage
+         * @type String
+         * @default empty
+         */
+        actionFailedMessage: "",
+
+        /**
+         * If the username field should use type 'email'. Defaults to true because email based logins are my favorite.
+         * @attribute requireEmailUsername
+         * @type Boolean
+         * @default true
+         */
+        requireEmailUsername: true,
+
+        /**
+         * If the user wants to be remembered. This value should be saved to and restored from the user record when available. It should typically default
+         * to false when there's no cookie (implying the user is logging in from a new machine, possibly in a public place, etc).
+         * @attribute requireEmailUsername
+         * @type Boolean
+         * @default false
+         */
+        rememberMe: false,
+
+        /**
+         * The value for the username field. Typically only consumed, but can be used to pre-populate based on a user cookie.
+         * @attribute username
+         * @type String
+         * @default empty
+         */
+        username: "",
+
+        /**
+         * Resource strings. If you do I18N this will make sense. If not, just run with it :~)
+         * Changing these after creation time will have no _predictable_ effect unless you call #updateMessageStrings() afterwords.
+         * If you are doing I18N you should just replace this value on this component's prototype. If you _really_ care about performance lots you might want
+         * to replace the below with an empty object initializer: "rsrc: {},"
+         *
+         * @attribute rsrc
+         * @type Object
+         */
+        rsrc: {
+          signup: {
+            headerText: "Sign up",
+            subHeaderText: "Already have an account?",
+            subHeaderLinkText: "Log in here",
+            lede: "Create your new account",
+
+            usernameFieldLabel: "Enter your Email address",
+            passwordFieldLabel: "Choose a Password",
+            passwordVerificationFieldLabel: "Verify Password",
+            passwordVerificationErrorMessage: "Passwords do not match.",
+            actionButtonLabel: "Create!"
+          },
+          login: {
+            headerText: "Log in",
+            subHeaderText: "Don't have an account?",
+            subHeaderLinkText: "Sign up now",
+            lede: "Login with your email address",
+
+            usernameFieldLabel: "Email or Username",
+            passwordFieldLabel: "Password",
+            actionButtonLabel: "Log in",
+
+            resetPasswordText: "Forgot your password?",
+            resetPasswordLinkText: "Click here."
+
+          },
+
+          error: {
+            usernameMustBeValidEmail: "Username must be a valid email address.",
+            passwordTooShort: "Password must be at least 8 characters long."
+          }
+
+        }
+      },
+
+      observe: {
+        'rememberMe': 'updateRememberMeField',
+        'username': 'onUsernameChanged',
+        'password': 'onPasswordChanged'
+      },
+
+      created: function () {
+        /* Prevent sharing of child object references. */
+        this.rsrc = Object.cloneDeep({}, this.rsrc);
+
+        this.usernameErrorMessage = this.rsrc.error.usernameMustBeValidEmail;
+        this.passwordErrorMessage = this.rsrc.error.passwordTooShort;
+        this.updateMessageStrings();
+      },
+
+      ready: function () {
+        /* Silliness, but it makes IntelliJ happy: */
+        this.$.fUsername = this.$.fUsername || null;
+        this.$.idActionButton = this.$.idActionButton || null;
+        this.passwordVerificationValue = this.passwordVerificationValue || "";
+
+        /* If the username attribute was set then we need to commit the value to the field. */
+        if (this.username && this.username.length > 0) {
+          this.$.fUsername.value = this.username;
+          this.$.fUsername.commit();
+        }
+        /* Apply the callbacks to the service adaptor */
+        this.authServiceAdaptor.setCallbackActions(
+            this.loginSuccess.bind(this),
+            this.loginError.bind(this),
+            this.signupSuccess.bind(this),
+            this.signupError.bind(this)
+        );
+
+      },
+
+      onSubHeaderLinkTap: function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        switch (this.displayMode) {
+          case this.displayModes.login:
+            this.handleSignupLinkTap();
+            break;
+          case this.displayModes.signup:
+            this.handleLoginLinkTap();
+            break;
+          case this.displayModes.forgotPassword:
+            this.handleLoginLinkTap();
+            break;
+          default:
+            throw new Error("Invalid display mode: " + this.displayMode)
+        }
+        this.updateMessageStrings();
+
+      },
+
+      handleLoginLinkTap: function () {
+        this.displayMode = this.displayModes.login;
+      },
+
+      handleSignupLinkTap: function () {
+        this.displayMode = this.displayModes.signup;
+      },
+
+      onForgotPasswordLinkTap: function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.actionFailedMessage = "Not Implemented!";
+        this.displayMode = this.displayModes.forgotPassword;
+        this.updateMessageStrings();
+      },
+
+      onUsernameChanged: function () {
+        /* Examine the input field's own validation test. */
+        var valid = this.$.fUsername.validity.valid;
+        valid &= this.authServiceAdaptor.usernameValidator(this.username);
+        this.showUsernameError = !valid;
+        this.updateLoginButtonEnabledState();
+      },
+
+      onPasswordChanged: function () {
+        var valid = this.authServiceAdaptor.passwordValidator(this.password, this.username);
+        this.showPasswordError = !valid;
+        this.updateLoginButtonEnabledState();
+      },
+
+      onActionButtonTap: function (event, sender) {
+        switch (this.displayMode) {
+          case this.displayModes.login:
+            this.async(this.handleLoginButtonTap);
+            break;
+          case this.displayModes.signup:
+            this.async(this.handleSignupButtonTap);
+            break;
+          case this.displayModes.forgotPassword:
+            break;
+          default:
+            throw new Error("Invalid display mode: " + this.displayMode)
+
+        }
+      },
+
+      updateMessageStrings: function () {
+        this.aRsrc = this.rsrc[this.displayMode];
+      },
+
+      updateLoginButtonEnabledState: function () {
+        this.$.idActionButton.disabled = this.isValid() !== true;
+      },
+
+      /**
+       * Check that the inputs are valid, meaning that the login attempt should be allowed to proceed.
+       * @returns {boolean}
+       */
+      isValid: function () {
+        return this.username
+               && this.username.length > 0 // just checking that the field has been populated, which invokes the validators.
+               && this.password
+               && this.password.length > 0
+               && this.showUsernameError === false
+               && this.showPasswordError === false
+               && (this.passwordVerificationValue === '' || this.password == this.passwordVerificationValue);
+      },
+
+      handleLoginButtonTap: function () {
+        if (!this.isValid()) {
+          return;
+        }
+        this.$.idActionButton.disabled = true;
+        this.authServiceAdaptor.performLogin(this.username, this.password, this.rememberMe);
+      },
+
+      handleSignupButtonTap: function () {
+        if (!this.isValid() || !this.signupAction) {
+          return;
+        }
+        this.$.idActionButton.disabled = true;
+        this.authServiceAdaptor.performSignup(this.username, this.password, this.rememberMe);
+      },
+
+      loginSuccess: function () {
+        this.aRsrc.actionButtonLabel = "Success! Welcome back.";
+        this.job("once", function () {
+          this.fire('login-success');
+        }, 2000, this);
+      },
+
+      loginError: function (errorMessage) {
+        this.actionFailedMessage = errorMessage;
+        this.updateLoginButtonEnabledState();
+      },
+
+      signupSuccess: function () {
+        this.aRsrc.actionButtonLabel = "Account created. Welcome!";
+        this.job("once", function () {
+          this.fire('signup-success');
+        }, 2000, this);
+      },
+
+
+      signupError: function (errorMessage) {
+        this.actionFailedMessage = errorMessage;
+        this.updateLoginButtonEnabledState();
+      }
+
+    });
+
+
+  </script>
+</polymer-element>

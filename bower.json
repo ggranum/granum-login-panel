@@ -1,0 +1,7 @@
+{
+  "name": "granum-login-panel#gh-pages",
+  "private": true,
+  "dependencies": {
+    "granum-login-panel": "ggranum/granum-login-panel#master"
+  }
+}

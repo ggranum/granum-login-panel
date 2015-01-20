@@ -1,0 +1,55 @@
+{
+  "name": "granum-login-panel",
+  "authors": [
+    "Geoff M. Granum <geoff@granum.biz>"
+  ],
+  "description": "Polymer based login panel. Will eventually be mobile friendly - once we figure out that whole address bar thing in Polymer.",
+  "keywords": [
+    "web-component",
+    "web-components",
+    "polymer",
+    "auth",
+    "authentication",
+    "login",
+    "sign in",
+    "widget"
+  ],
+  "main": "granum-login-panel.html",
+  "license": "MIT",
+  "homepage": "https://ggranum.github.com/granum-login-panel",
+  "ignore": [
+    "/.*",
+    "/tests/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^0.5.2",
+    "core-collapse": "Polymer/core-collapse#^0.5.2",
+    "core-header-panel": "Polymer/core-header-panel#^0.5.2",
+    "core-label": "Polymer/core-label#^0.5.2",
+    "core-icons": "Polymer/core-icons#^0.5.2",
+    "core-icon-button": "Polymer/core-icon-button#^0.5.2",
+    "core-overlay": "Polymer/core-overlay#^0.5.2",
+    "core-pages": "Polymer/core-pages#^0.5.2",
+    "core-selector": "Polymer/core-selector#^0.5.2",
+    "core-toolbar": "Polymer/core-toolbar#^0.5.2",
+    "core-transition": "Polymer/core-transition#^0.5.2",
+    "paper-button": "Polymer/paper-button#^0.5.2",
+    "paper-checkbox": "Polymer/paper-checkbox#^0.5.2",
+    "paper-dialog": "Polymer/paper-dialog#^0.5.2",
+    "paper-input": "Polymer/paper-input#^0.5.2",
+    "paper-item": "Polymer/paper-item#^0.5.2"
+  },
+  "devDependencies": {
+    "web-component-tester": "Polymer/web-component-tester#^2.0.5"
+  },
+  "_release": "c5fc89b294",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "c5fc89b294ac50e98dc941007aad553b40522d19"
+  },
+  "_source": "git://github.com/ggranum/granum-login-panel.git",
+  "_target": "master",
+  "_originalSource": "ggranum/granum-login-panel",
+  "_direct": true
+}
