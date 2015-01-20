@@ -1,0 +1,40 @@
+<!--
+    @license
+    Copyright (c) 2014 Geoff M. Granum. Released under the [MIT license](http://choosealicense.com/licenses/mit/).
+
+-->
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>seed-element</title>
+
+  <script src="../../webcomponentsjs/webcomponents.min.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+
+  <link rel="import" href="../granum-login-panel.html">
+</head>
+<body>
+
+  <div class="container">
+    <granum-login-panel flex></granum-login-panel>
+  </div>
+
+
+  <script>
+    var ms = document.querySelector('granum-login-panel');
+
+    suite('<granum-login-panel>', function() {
+
+      test('Heh.', function() {
+//        assert.equal(ms.boardSize, 8);
+      });
+      test('Ooops.', function () {
+//        assert.equal(ms.mineCount, 8);
+      });
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,56 @@
+!.gitkeep
+
+# Cruft
+*.class
+*.tmp
+*.mwb.bak
+
+
+#Build dirs
+build/
+deploy/
+dist/
+out/
+.sass-cache/
+
+
+#NodeJs / Package Manager dirs
+node_modules/
+.tmp/
+
+
+#### Below from http://help.github.com/ignore-files/ ####
+###################################################
+# Packages #
+############
+# it's better to unpack these files and commit the raw source
+# git has its own built in compression methods
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.war
+*.ear
+*.rar
+*.tar
+*.zip
+
+# Logs and databases #
+######################
+*.log
+*.sql
+*.sqlite
+*.h2.db
+
+# OS generated files #
+######################
+.DS_Store*
+ehthumbs.db
+#Icon?
+Thumbs.db
+
+
+#### Local property override files ####
+*.local.properties
+

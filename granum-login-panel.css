@@ -1,0 +1,75 @@
+/*
+ * @license
+ * Copyright (c) 2014 Geoff Granum. Released under the [MIT license](http://choosealicense.com/licenses/mit/).
+ */
+:host {
+  height: 31em;
+  width: 25em;
+  background: #fefefe;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+#idHeaderPanel {
+  padding-top: 0;
+}
+
+.header {
+  background: #f2f2f2;
+  padding: .75em 2em 1.5em 2em;
+}
+
+.header h2 {
+  margin-bottom: .25em;
+}
+
+.content {
+  padding: 1em 2em 1em 2em;
+}
+
+h3 {
+  margin-top: .25em;
+  margin-bottom: .25em;
+}
+
+.dialog-forgot-password {
+  padding-top: .75em;
+  font-size: x-small;
+}
+
+.username-field {
+  margin-top: .1em;
+  padding-top: .1em;
+}
+
+.password-field {
+  margin-top: .1em;
+  padding-top: .1em;
+}
+
+.remember-me {
+  margin-top: 1.5em;
+}
+
+.remember-me-text {
+  margin-left: 1em;
+}
+
+paper-checkbox.blue::shadow #ink[checked] {
+  color: #4285f4;
+}
+
+paper-checkbox.blue::shadow #checkbox.checked {
+  border-color: #4285f4;
+}
+
+.login-button {
+  background-color: #4285f4;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+.actionFailed {
+  color:red;
+  padding:.75em 0 0 0;
+  margin: 0;
+}
