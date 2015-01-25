@@ -5,6 +5,13 @@
  App
  */
 /**
+ *
+ * If you're starting from scratch, break these modules out into a few appropriately named files and start editing away.
+ *
+ * If you are using firebase you can pretty much just set "App.firebaseProjectName' and roll - the field is defined just below this comment block.
+ *
+ *
+ *
  * Define the primary App object.
  */
 
@@ -14,9 +21,12 @@ window.App = window.App || (function () {
 
   var App = {
     Types: {},
-    firebaseProjectName: 'potentiate'
+    firebaseProjectName: undefined
   };
 
+  if(!App.firebaseProjectName){
+    alert("You'll need to set 'window.App.firebaseProjectName' to a valid firebase project to test actual login/signup behaviors.");
+  }
   return App;
 
 }());
@@ -163,8 +173,12 @@ window.App = window.App || (function () {
 
     init: function () {
       state = states.unknown;
-      authRef = new Firebase("https://" + App.firebaseProjectName + ".firebaseio.com");
-      authRef.onAuth(Auth.firebaseAuthCallback);
+      if(App.firebaseProjectName){
+        authRef = new Firebase("https://" + App.firebaseProjectName + ".firebaseio.com");
+        authRef.onAuth(Auth.firebaseAuthCallback);
+      } else {
+        authRef = {}; // let the demo work a bit longer
+      }
     },
 
 
