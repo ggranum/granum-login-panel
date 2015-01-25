@@ -18,21 +18,28 @@
   <title>granum-login-panel</title>
 
   <script src="../webcomponentsjs/webcomponents.js"></script>
-  <script src="./AuthServiceAdaptor.js"></script>
+  <script src="/pubsub-js/src/pubsub.js"></script>
+  <script src="App.js"></script>
+
+
+  <link href="../core-header-panel/core-header-panel.html" rel="import">
+  <link href="../core-icon-button/core-icon-button.html" rel="import">
+  <link href="../core-label/core-label.html" rel="import">
+  <link href="../core-media-query/core-media-query.html" rel="import">
+  <link href="../core-overlay/core-overlay.html" rel="import">
+  <link href="../core-pages/core-pages.html" rel="import">
+  <link href="../core-toolbar/core-toolbar.html" rel="import">
+  <link href="../core-transition/core-transition.html" rel="import">
 
   <link href="../font-roboto/roboto.html" rel="import">
-  <link href="../core-pages/core-pages.html" rel="import">
   <link href="../paper-button/paper-button.html" rel="import">
+  <link href="../paper-checkbox/paper-checkbox.html" rel="import">
+  <link href="../paper-radio-button/paper-radio-button.html" rel="import">
   <link href="../paper-dialog/paper-action-dialog.html" rel="import">
   <link href="../paper-dialog/paper-dialog.html" rel="import">
   <link href="../paper-shadow/paper-shadow.html" rel="import">
 
 
-  <link rel="import" href="../core-overlay/core-overlay.html">
-  <link rel="import" href="../core-header-panel/core-header-panel.html">
-  <link rel="import" href="../core-transition/core-transition.html">
-  <link rel="import" href="../core-media-query/core-media-query.html">
-  <link rel="import" href="../core-toolbar/core-toolbar.html">
   <link href="granum-login-panel.html" rel="import">
 
   <style shim-shadowdom>
@@ -43,6 +50,7 @@
       padding: 24px;
       -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
       -webkit-touch-callout: none;
+      background-color: rgba(10, 100, 65, 0.25);
     }
 
     button {
@@ -67,141 +75,145 @@
       margin-bottom: 2em;
     }
 
+    html /deep/ #checkbox.checked {
+      border-color: red;
+    }
+
+    ::shadow .checkboxes {
+
+      background-color: lightgray;
+      border-radius: .25em;;
+      margin-right: .5em;
+    }
+
+
+
   </style>
+
+  <polymer-element name="the-app">
+
+    <template>
+<style>
+  .login-panel-container {
+    margin-top: 1em;
+  }
+
+</style>
+
+      <core-header-panel fit mode="scroll">
+        <div class="core-header">
+          <core-toolbar style="background: #4285f4;">
+            <core-label center horizontal layout>
+              <paper-checkbox class="checkboxes" checked?="{{pageMode}}" on-core-change="{{borkedCheckboxesHandler1}}" for></paper-checkbox>
+              <div flex>{{pageMode ? "Page" : "Dialog"}}</div>
+            </core-label>
+            <core-label center horizontal layout>
+              <paper-checkbox class="checkboxes"
+                              checked?="{{shadowed && pageMode}}"
+                              disabled="{{!pageMode}}"
+                              on-core-change="{{borkedCheckboxesHandler2}}"
+                              for></paper-checkbox>
+              <div flex>{{shadowed ? "Shadow Enabled" : "Shadow Disabled"}}</div>
+            </core-label>
+            <span flex></span>
+            <core-icon-button icon="account-circle" on-tap="{{onLoginTapped}}" hidden?="{{!statusKnown || authUser}}">Login</core-icon-button>
+            <core-icon-button icon="account-circle" on-tap="{{onLogoutTapped}}" hidden?="{{!statusKnown || !authUser}}">Logout</core-icon-button>
+            <span>Login Panel Demo</span>
+          </core-toolbar>
+        </div>
+        <div class="content" fit layout horizontal>
+          <paper-action-dialog id="idLoginDialog" opened="{{!pageMode && showLogin}}">
+            <granum-login-panel
+                username="bob@example.com"
+                requireEmailUsername="true"
+                on-login-success="{{onLoginSuccess}}"
+                on-signup-success="{{onSignupSuccess}}"></granum-login-panel>
+          </paper-action-dialog>
+
+
+          <section flex layout vertical center-center>
+            <div flex layout vertical start class="login-panel-container" >
+              <granum-login-panel id="idLoginPanel"
+                                  hidden?="{{!pageMode || !showLogin}}"
+                                  username="{{authUser.password.email}}"
+                                  shadowed="{{shadowed}}"
+                                  requireEmailUsername="true"
+                                  on-login-success="{{onLoginSuccess}}"
+                                  on-signup-success="{{onSignupSuccess}}"></granum-login-panel>
+            </div>
+          </section>
+
+        </div>
+      </core-header-panel>
+      <core-media-query query="max-width: 640px" queryMatches="{{phoneScreen}}"></core-media-query>
+    </template>
+
+    <script>
+      /* global App, PubSub */
+
+      (function (App) {
+        'use strict';
+        Polymer({
+          statusKnown: false,
+          authUser: undefined,
+
+          publish: {
+            selectedPage: 0,
+            shadowed: false,
+            pageMode: true,
+            showLogin: false
+          },
+
+          observe: {
+            pageMode: 'onPageModeChange'
+          },
+          borkedCheckboxesHandler1: function (e, x, cb) {
+            this.pageMode = cb.checked;
+          },
+          borkedCheckboxesHandler2: function (e, x, cb) {
+            this.shadowed = cb.checked;
+          },
+
+          ready: function () {
+            PubSub.subscribe(App.topics.auth.LOGGED_IN, this.handleLoggedIn.bind(this));
+            PubSub.subscribe(App.topics.auth.LOGGED_OUT, this.handleLoggedOut.bind(this));
+
+            PubSub.publish(App.topics.APP_READY);
+          },
+
+          handleLoggedIn: function (topic, data) {
+            this.statusKnown = true;
+            this.authUser = data;
+            this.job("hideIt", function(){
+              this.showLogin = false;
+            }, 500, this);
+          },
+
+          handleLoggedOut: function (topic, data) {
+            this.statusKnown = true;
+            this.authUser = null;
+          },
+
+          onLoginTapped: function(){
+            this.toggleLoginDialog();
+          },
+
+          onLogoutTapped: function(){
+            PubSub.publish(App.topics.action.user.ATTEMPT_LOGOUT);
+          },
+
+          toggleLoginDialog: function () {
+            this.showLogin = !this.showLogin;
+          }
+
+        });
+      }(App));
+    </script>
+  </polymer-element>
+
 </head>
 <body unresolved fullbleed vertical layout>
-
-<template is="auto-binding">
-
-  <core-header-panel fit mode="scroll">
-    <div class="core-header">
-      <core-toolbar style="background: #4285f4;">
-        <paper-button raised
-                      class="header-button"
-                      disabled?="{{selectedPage == 0}}"
-                      on-tap="{{nextPage}}">Home
-        </paper-button>
-        <paper-button raised
-                      disabled?="{{selectedPage == 1}}"
-                      class="header-button"
-                      on-tap="{{nextPage}}">Login Page
-        </paper-button>
-        <paper-button raised
-                      class="header-button"
-                      on-tap="{{toggleLogin}}">Toggle Dialog
-        </paper-button>
-        <span flex></span>
-
-        <span>Login Panel Demo</span>
-      </core-toolbar>
-    </div>
-    <div class="content" fit>
-      <paper-action-dialog id="idLoginDialog">
-        <granum-login-panel
-            username="bob@example.com"
-            authServiceAdaptor="{{authServiceAdaptor}}"
-            requireEmailUsername="true"
-            on-login-success="{{onLoginSuccess}}"
-            on-signup-success="{{onSignupSuccess}}"></granum-login-panel>
-      </paper-action-dialog>
-
-      <core-pages id="idPages" fit selected="{{selectedPage}}" layout vertical center-center>
-        <section layout horizontal around-justified>
-          <h2>Choose one of the views from above.</h2>
-        </section>
-
-        <section layout vertical center-center>
-          <div flex layout vertical start>
-            <div>
-              <h2>As a 'flat' element, lying within the panel.</h2>
-            </div>
-            <granum-login-panel id="idLoginPanel"
-                                username="bob@example.com"
-                                authServiceAdaptor="{{authServiceAdaptor}}"
-                                shadowed="{{!phoneScreen}}"
-                                requireEmailUsername="true"
-                                on-login-success="{{onLoginSuccess}}"
-                                on-signup-success="{{onSignupSuccess}}"></granum-login-panel>
-          </div>
-        </section>
-      </core-pages>
-
-    </div>
-  </core-header-panel>
-  <core-media-query query="max-width: 640px" queryMatches="{{phoneScreen}}"></core-media-query>
-</template>
-
-<script>
-  var scope = document.querySelector('template[is=auto-binding]');
-  // No point creating, you should only ever have one copy. Still, global objects === yuck. Pass an instance variable around so you can mock something up
-  // when you finally write unit tests ;~)
-  var authAdaptor = window.AuthServiceAdaptor;
-
-  var performLogin = function () {
-    console.log("Logging in...", arguments);
-    authAdaptor.handleLoginSuccess("No-op Login action");
-  };
-
-  var performSignup = function () {
-    console.log("Logging in...", arguments);
-    authAdaptor.handleSignupSuccess("No-op signup action");
-  };
-  authAdaptor.setAuthActions(performLogin, performSignup);
-
-  var foo = {
-    selectedPage: 0,
-
-    // call back actions are set by the login panel, to which this field is bound (see above)
-    authServiceAdaptor: AuthServiceAdaptor,
-    nextPage: function (e, idx, sender) {
-      console.log("current page: ", this.selectedPage, this.$.idPages.items);
-      this.selectedPage = (this.selectedPage + 1) % this.$.idPages.items.length;
-    },
-
-    /* Listens to the _login panel_, so that a quick welcome message can be displayed. */
-    onLoginSuccess: function () {
-      console.log("Login action complete, ready to hide dialog / page away.");
-      if (this.selectedPage == 1) {
-        this.selectedPage = 0;
-      }
-      else if (this.$.idLoginDialog && this.$.idLoginDialog.opened) {
-        this.$.idLoginDialog.toggle();
-      }
-    },
-    /* Ditto */
-    onSignupSuccess: function () {
-      console.log("Signup action complete, ready to hide dialog / page away.");
-      if(this.selectedPage == 1){
-        this.selectedPage = 0;
-      }
-      else if (this.$.idLoginDialog && this.$.idLoginDialog.opened) {
-        this.$.idLoginDialog.toggle();
-      }
-    },
-
-    toggleLogin: function (e) {
-      if (e) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-      this.$.idLoginDialog.toggle();
-      return false;
-    },
-
-    ready: function () {
-      /* Uncomment for quick editing of Dialog view with BrowserSync*/
-      /*this.async(this.toggleLogin);*/
-
-      /* Uncomment this line for quick editing of the page view: */
-//      this.selectedPage = 1;
-
-    }
-  };
-
-  /* probably requires polyfills.js, or your own version of same. */
-  Object.assign(scope, foo);
-
-</script>
-
+  <the-app selectedPage="1"></the-app>
+  <script src="../firebase/firebase.js"></script>
 </body>
 </html>

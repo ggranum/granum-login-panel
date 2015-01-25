@@ -23,6 +23,8 @@
     "/tests/"
   ],
   "dependencies": {
+    "pubsub-js": "^1.5.0",
+    "firebase": "^2.1.1",
     "polymer": "Polymer/polymer#^0.5.2",
     "core-collapse": "Polymer/core-collapse#^0.5.2",
     "core-header-panel": "Polymer/core-header-panel#^0.5.2",
@@ -38,7 +40,9 @@
     "paper-checkbox": "Polymer/paper-checkbox#^0.5.2",
     "paper-dialog": "Polymer/paper-dialog#^0.5.2",
     "paper-input": "Polymer/paper-input#^0.5.2",
-    "paper-item": "Polymer/paper-item#^0.5.2"
+    "paper-item": "Polymer/paper-item#^0.5.2",
+    "paper-ripple": "Polymer/paper-ripple#^0.5.2",
+    "paper-shadow": "Polymer/paper-shadow#^0.5.2"
   },
   "devDependencies": {
     "web-component-tester": "Polymer/web-component-tester#^2.0.5"

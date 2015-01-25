@@ -11,10 +11,10 @@ Operates via an "Authentication Service Adaptor" - basically, it is authenticati
 
 
 ## Todo
-  [] The action button remains disabled until the password field blurs, which means two clicks. Use a job to validate more frequently or whatever.
-  [] Implement Forgot Password
-  [] Validation and error message handling that isn't so kludgy.
-  [] Use a page transition to make the switch from login mode to signup mode more smooth. It's actually TOO fast. Go figure.
+- [ ] The action button remains disabled until the password field blurs, which means two clicks. Use a job to validate more frequently or whatever.
+- [ ] Implement Forgot Password
+- [ ] Validation and error message handling that isn't so kludgy.
+- [ ] Use a page transition to make the switch from login mode to signup mode more smooth. It's actually TOO fast. Go figure.
 
 
 ## Notes
